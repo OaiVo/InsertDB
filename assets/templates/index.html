@@ -1,0 +1,26 @@
+<div class="row" style="margin-top: 20px">
+    <div class="col-xs-6 col-xs-offset-3">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Import Json Files</h3>
+            </div>
+            <div class="panel-body">
+                <form name="form" ng-submit="submit()">
+                    <div class="form-group">
+                        <button ng-model="files" class="btn btn-warning" ngf-select ngf-change="listFiles()"
+                                ngf-multiple="true" ngf-max-files="5">
+                            Select files
+                        </button>
+                    </div>
+                    <div>
+                        <p ng-repeat="name in list">
+                            {{name}}
+                        </p>
+                    </div>
+                    <button type="submit" class="btn btn-primary" data-ng-disabled="!canSubmit()">Import</button>
+                    <p ng-if="status" style="color: red">{{message}}</p>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

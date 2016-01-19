@@ -16,7 +16,8 @@ var tmpPath = '.tmp/public/';
 // (if you're using LESS with the built-in default config, you'll want
 //  to change `assets/styles/importer.less` instead.)
 var cssFilesToInject = [
-  'styles/**/*.css'
+    'styles/**/*.css',
+    'bower_components/bootstrap/dist/css/bootstrap.css'
 ];
 
 
@@ -24,18 +25,26 @@ var cssFilesToInject = [
 // (uses Grunt-style wildcard/glob/splat expressions)
 var jsFilesToInject = [
 
-  // Load sails.io before everything else
-  'js/dependencies/sails.io.js',
+    // Load sails.io before everything else
+    'js/dependencies/sails.io.js',
 
-  // Dependencies like jQuery, or Angular are brought in here
-  'js/dependencies/**/*.js',
+    // Dependencies like jQuery, or Angular are brought in here
+    'js/dependencies/**/*.js',
 
-  // All of the rest of your client-side js files
-  // will be injected here in no particular order.
-  'js/**/*.js',
+    // All of the rest of your client-side js files
+    // will be injected here in no particular order.
+    '/bower_components/angular/angular.min.js',
 
-  // Use the "exclude" operator to ignore files
-  // '!js/ignore/these/files/*.js'
+
+    '/bower_components/angular-ui-router/release/angular-ui-router.min.js',
+    '/bower_components/jquery/dist/jquery.min.js',
+    '/bower_components/bootstrap/dist/js/bootstrap.min.js',
+    '/bower_components/ng-file-upload/ng-file-upload-all.min.js',
+    'js/router.js',
+    'js/**/*.js'
+
+    // Use the "exclude" operator to ignore files
+    // '!js/ignore/these/files/*.js'
 ];
 
 
@@ -49,9 +58,8 @@ var jsFilesToInject = [
 // templates get spit out to the same file.  Be sure and check out `tasks/README.md`
 // for information on customizing and installing new tasks.
 var templateFilesToInject = [
-  'templates/**/*.html'
+    'templates/**/*.html'
 ];
-
 
 
 // Prefix relative paths to source files so they point to the proper locations
@@ -64,5 +72,5 @@ module.exports.templateFilesToInject = templateFilesToInject.map(transformPath);
 // Transform paths relative to the "assets" folder to be relative to the public
 // folder, preserving "exclude" operators.
 function transformPath(path) {
-  return (path.substring(0,1) == '!') ? ('!' + tmpPath + path.substring(1)) : (tmpPath + path);
+    return (path.substring(0, 1) == '!') ? ('!' + tmpPath + path.substring(1)) : (tmpPath + path);
 }
