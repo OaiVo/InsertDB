@@ -41,4 +41,8 @@ InsertDBApp.controller('IndexCtrl', function ($scope, $log, $http, Upload) {
             });
         }
     }
+    $scope.crawling=function(){
+        console.log($scope.url);
+        var res=$http.post();
+    }
 });
