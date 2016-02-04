@@ -3,18 +3,23 @@
  */
 module.exports = {
     attributes: {
-        racerId:{
-          type: 'integer'
-        },
-        name:{
+        number: {
             type: 'string'
         },
-        racer: {
-            collection: 'RacerCrown',
-            via: 'locationCrown'
+        name: {
+            type: 'string'
         },
-        locationCrown: {
-            model:'locationCrown'
+        barrier: {
+            type: 'string'
+        },
+        win: {
+            type: 'string'
+        },
+        place: {
+            type: 'string'
+        },
+        roundCrown: {
+            model: 'roundCrown'
         }
     }
 };

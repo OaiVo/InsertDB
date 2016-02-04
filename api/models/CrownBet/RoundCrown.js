@@ -6,14 +6,21 @@ module.exports = {
         roundId: {
             type: 'string'
         },
-        roundName:{
-            type:'string'
-        },
-        date:{
+        roundName: {
             type: 'string'
         },
-        result:{
+        date: {
             type: 'string'
+        },
+        result: {
+            type: 'string'
+        },
+        racer:{
+            collection: 'racerCrown',
+            via: 'roundCrown'
+        },
+        subCategoryCrown: {
+            model: 'subCategoryCrown'
         }
     }
 };
