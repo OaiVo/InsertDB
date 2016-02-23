@@ -9,7 +9,6 @@ module.exports = {
         var d = q.defer();
         roundNumber++;
         var url = 'https://crownbet.com.au/racing/horse-racing/' + slug + '/' + day + '/race-' + roundNumber + '-' + subCategoryId + '-' + roundId;
-        sails.log(url);
         htmlToJson.request(url, {
             new: ['#middle-container #events',function($val){
                 return $val.html();
@@ -47,7 +46,7 @@ module.exports = {
             if (err) {
                 return d.reject('Crawling has error' + err);
             } else {
-                sails.log(data.new);
+                //sails.log(data.new);
                 return d.resolve(data.new);
             }
         });

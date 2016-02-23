@@ -67,7 +67,7 @@ module.exports = {
         })
     },
     test: function (req, res) {
-        var racer=CrownBetService.crawling('gore', '20160204', 7, '237770', '12591374');
+        var racer=CrownBetService.crawling('ararat', '20160215', 1, '243761', '12794565');
         racer.then(function(data){
             return res.ok(data);
         },function(err){
