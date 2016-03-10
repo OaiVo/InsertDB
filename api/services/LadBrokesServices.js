@@ -155,5 +155,29 @@ module.exports = {
             }
         });
         return d.promise;
+    },
+    getData1: function(day){
+        var d = q.defer();
+        TournamentLB.find().populateAll().exec(function (err, obj) {
+            if (err) {
+                d.reject(err);
+            } else {
+                d.resolve(obj);
+            }
+        });
+        return d.promise;
+    },
+    getData2: function(id){
+        var d = q.defer();
+        RoundLB.find({
+            locationLB:id
+        }).populate('RacerLB').exec(function (err, obj) {
+            if (err) {
+                d.reject(err);
+            } else {
+                d.resolve(obj);
+            }
+        });
+        return d.promise;
     }
 };
