@@ -33,7 +33,7 @@ module.exports = {
         var getTournaments=LadBrokesServices.getTournaments(url); //get Tournament
         getTournaments.then(function(tournamentsData){
             tournamentsData.forEach(function(tournament,i,tournaments){
-                var addTournament=LadBrokesServices.addTournament(tournament.name[0]); // Insert Tournament
+                var addTournament=LadBrokesServices.addTournament(tournament.name[0],day); // Insert Tournament
                 addTournament.then(function(data){
                     tournament.locations.forEach(function(location,i,locations){
                         var addLocation=LadBrokesServices.addLocation(location,data.id); // Insert Location
@@ -119,28 +119,32 @@ module.exports = {
         r.then(function(data){
             var max=data.length;
             var count=0;
-            data.forEach(function(tournament,i,tournaments){
-                var max2=tournament.locationLB.length;
-                var count2=0;
-                tournament.locationLB.forEach(function(location,i2,locations){
-                    var r2=LadBrokesServices.getData2(location.id);
-                    r2.then(function(data2){
-                        location.roundLB = data2;
-                        sails.log(location);
-                        count2++;
-                        if(count2==max2){
-                            count++;
-                            if(count==max){
-                                sails.log(4);
-                                return res.ok(data);
-                            }
-                        }
-                    },function(err){
-                        return res.badRequest('Do not get data');
-                    });
+            if(max>0){
+                data.forEach(function(tournament,i,tournaments){
+                    var max2=tournament.locationLB.length;
+                    var count2=0;
+                    if(max2>0) {
+                        tournament.locationLB.forEach(function (location, i2, locations) {
+                            var r2 = LadBrokesServices.getData2(location.id);
+                            r2.then(function (data2) {
+                                location.roundLB = data2;
+                                count2++;
+                                if (count2 == max2) {
+                                    count++;
+                                    if (count == max) {
+                                        sails.log('Successfully!!');
+                                        return res.ok(data);
+                                    }
+                                }
+                            }, function (err) {
+                                return res.badRequest('Do not get data');
+                            });
+                        });
+                    }
                 });
-            });
-            return res.ok(obj);
+            }else{
+                return res.ok({});
+            }
         },function(err){
             return res.badRequest('Do not get data');
         });

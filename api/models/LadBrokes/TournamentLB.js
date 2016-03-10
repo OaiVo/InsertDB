@@ -3,6 +3,9 @@ module.exports = {
         name: {
             type: 'string'
         },
+        date: {
+            type: 'string'
+        },
         locationLB: {
             collection: 'locationLB',
             via: 'tournamentLB'

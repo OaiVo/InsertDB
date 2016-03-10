@@ -95,10 +95,11 @@ module.exports = {
     //add data
 
 
-    addTournament: function (data) {
+    addTournament: function (data,day) {
         var d = q.defer();
         TournamentLB.create({
-            name: data
+            name: data,
+            date: day
         }).exec(function (err, obj) {
             if (err) {
                 d.reject('addTournament has error' + err)
@@ -158,7 +159,9 @@ module.exports = {
     },
     getData1: function(day){
         var d = q.defer();
-        TournamentLB.find().populateAll().exec(function (err, obj) {
+        TournamentLB.find({
+            date:day
+        }).populateAll().exec(function (err, obj) {
             if (err) {
                 d.reject(err);
             } else {
