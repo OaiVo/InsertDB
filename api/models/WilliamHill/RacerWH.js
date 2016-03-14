@@ -18,8 +18,8 @@ module.exports = {
         place: {
             type: 'string'
         },
-        round: {
-            model: 'round'
+        roundWH: {
+            model: 'roundWH'
         }
     }
 };

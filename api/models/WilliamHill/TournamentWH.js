@@ -9,9 +9,9 @@ module.exports = {
         date: {
             type: 'string'
         },
-        location: {
-            collection: 'location',
-            via: 'tournament'
+        locationWH: {
+            collection: 'locationWH',
+            via: 'tournamentWH'
         }
     }
 };

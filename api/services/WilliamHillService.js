@@ -9,18 +9,19 @@ var htmlToJson = require('html-to-json');
 
 module.exports = {
     getTournaments: function (url) {
-        sails.log(2);
         var d = q.defer();
         var tournament = htmlToJson.request(url, {
             Tournaments: ['.block', {
-                name: ['.drop-header a .left', function ($name) {
-                    return $name.text();
+                name: ['>.drop-header .left', function ($name) {
+                    var $content = $name.text().trim();
+                    var $content2 = $content.split('(');
+                    return $content2[0].trim();
                 }],
-                locations: ['.racing-location', {
-                    name: ['>a', function ($name) {
-                        return $name.text();
+                locations: ['>.block-grid tbody>tr', {
+                    name: ['.venue', function ($name) {
+                        return $name.text().trim();
                     }],
-                    url: ['>a', function ($url) {
+                    url: ['.fixed a', function ($url) {
                         return $url.attr('href');
                     }]
                 }]
@@ -29,27 +30,8 @@ module.exports = {
             if (err) {
                 d.reject('getTournaments has error');
             } else {
+                data.Tournaments.splice(0, 1);
                 d.resolve(data.Tournaments);
-            }
-        });
-        return d.promise;
-    },
-    getRounds: function (url) {
-        var d = q.defer();
-        var tournament = htmlToJson.request(url, {
-            Rounds: ['.table-hdr .races-row >ul>li', {
-                name: ['>a', function ($name) {
-                    return $name.text();
-                }],
-                url: ['>a', function ($url) {
-                    return $url.attr('href');
-                }]
-            }]
-        }, function (err, data) {
-            if (err) {
-                d.reject('getRounds has error');
-            } else {
-                d.resolve(data.Rounds);
             }
         });
         return d.promise;
@@ -57,37 +39,32 @@ module.exports = {
     getRacers: function (url) {
         var d = q.defer();
         var promise = htmlToJson.request(url, {
-            racers: ['.bettingtable .competitor-view tr ', {
-                name: ['.entrant-details>span:nth-child(1)', function ($name) {
-                    return $name.text();
+            racers: ['.win-place .row:not(.race-details):not(.race-legend):not(.s-frm):not(.extra-bet-check-container)', {
+                name: ['.competitorName', function ($name) {
+                    return $name.text().trim();
                 }],
-                number: ['.entrant-details>span:nth-child(2)', function ($name) {
-                    return $name.text();
+                number: ['.number b', function ($number) {
+                    return $number.text().trim();
                 }],
-                barrier: ['.entrant-details>span:nth-child(3)', function ($name) {
-                    var $content = $name.text().trim();
+                barrier: ['.number text', function ($barrier) {
+                    var $content = $barrier.text().trim();
                     var $content2 = $content.split('(');
                     var $content3 = $content2[1].split(')');
-                    return $content3[0].trim(')');
+                    return $content3[0].trim();
                 }],
-                win: ['.win', function ($val) {
+                win: ['.btote-win', function ($val) {
                     return $val.text().trim();
                 }],
-                place: ['.place', function ($val) {
+                place: ['.btote-place', function ($val) {
                     return $val.text().trim();
                 }]
             }]
         }, function (err, data) {
             if (err) {
-                d.reject('getHorses has error');
+                sails.log(err);
+                d.reject('getRacers has error');
             } else {
-                var newData=[];
-                data.racers.forEach(function(racer,i,racers){
-                    if(!(racer.number.length==0&&racer.name.length==0&&racer.barrier.length==0)){
-                        newData.push(racer);
-                    }
-                });
-                d.resolve(newData);
+                d.resolve(data.racers);
             }
         });
         return d.promise;
@@ -98,7 +75,7 @@ module.exports = {
 
     addTournament: function (data,day) {
         var d = q.defer();
-        TournamentLB.create({
+        TournamentWH.create({
             name: data,
             date: day
         }).exec(function (err, obj) {
@@ -112,10 +89,10 @@ module.exports = {
     },
     addLocation: function (data, id) {
         var d = q.defer();
-        LocationLB.create({
+        LocationWH.create({
             name: data.name[0],
             url: data.url[0],
-            tournamentLB: id
+            tournamentWH: id
         }).exec(function (err, obj) {
             if (err) {
                 d.reject('addLocation has error' + err)
@@ -125,12 +102,12 @@ module.exports = {
         });
         return d.promise;
     },
-    addRound: function (data, id) {
+    addRound: function (round,url, id) {
         var d = q.defer();
-        RoundLB.create({
-            name: data.name[0],
-            url: data.url[0],
-            locationLB: id
+        RoundWH.create({
+            name: 'R'+round,
+            url: 'https://www.williamhill.com.au/'+url,
+            locationWH: id
         }).exec(function (err, obj) {
             if (err) {
                 d.reject('addRound has error' + err);
@@ -142,13 +119,13 @@ module.exports = {
     },
     addRacer: function (data, id) {
         var d = q.defer();
-        RacerLB.create({
+        RacerWH.create({
             name: data.name[0],
             number: data.number[0],
             barrier: data.barrier[0],
             win: data.win[0],
             place: data.place[0],
-            roundLB: id
+            roundWH: id
         }).exec(function (err, obj) {
             if (err) {
                 d.reject('addRacer has error' + err);
@@ -160,7 +137,7 @@ module.exports = {
     },
     getData1: function(day){
         var d = q.defer();
-        TournamentLB.find({
+        TournamentWH.find({
             date:day
         }).populateAll().exec(function (err, obj) {
             if (err) {
@@ -173,9 +150,9 @@ module.exports = {
     },
     getData2: function(id){
         var d = q.defer();
-        RoundLB.find({
-            locationLB:id
-        }).populate('racerLB').exec(function (err, obj) {
+        RoundWH.find({
+            locationWH:id
+        }).populate('racerWH').exec(function (err, obj) {
             if (err) {
                 d.reject(err);
             } else {

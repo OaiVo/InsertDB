@@ -9,12 +9,12 @@ module.exports = {
         url: {
             type: 'string'
         },
-        round: {
-            collection: 'round',
-            via: 'location'
+        roundWH: {
+            collection: 'roundWH',
+            via: 'locationWH'
         },
-        tournament: {
-            model: 'tournament'
+        tournamentWH: {
+            model: 'tournamentWH'
         }
     }
 };

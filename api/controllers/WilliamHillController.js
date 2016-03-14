@@ -28,60 +28,46 @@ module.exports = {
         }else {
             return res.badRequest('Invalid Date!!');
         }
-        var url = 'https://www.ladbrokes.com.au/racing/horses/?date='+day;
-        var that=this;
-        var getTournaments=LadBrokesServices.getTournaments(url); //get Tournament
+        var url = 'https://www.williamhill.com.au/horse-racinggrid/meetings/'+date;
+        var getTournaments=WilliamHillService.getTournaments(url); //get Tournament
         getTournaments.then(function(tournamentsData){
             tournamentsData.forEach(function(tournament,i,tournaments){
-                var addTournament=LadBrokesServices.addTournament(tournament.name[0],day); // Insert Tournament
+                var addTournament=WilliamHillService.addTournament(tournament.name[0],day);
                 addTournament.then(function(data){
-                    tournament.locations.forEach(function(location,i,locations){
-                        var addLocation=LadBrokesServices.addLocation(location,data.id); // Insert Location
+                    tournament.locations.forEach(function(location,i2,locations){
+                        var addLocation=WilliamHillService.addLocation(location,data.id);
                         addLocation.then(function(data2){
-                            var getRound = LadBrokesServices.getRounds('https://www.ladbrokes.com.au'+data2.url);
-                            getRound.then(function(roundsData){
-                                roundsData.forEach(function(round,i,rounds){
-                                    var addRound = LadBrokesServices.addRound(round,data2.id);
-                                    addRound.then(function(data3){
-                                        var getRacers=LadBrokesServices.getRacers('https://www.ladbrokes.com.au'+data3.url);
-                                        getRacers.then(function(racersData){
-                                            racersData.forEach(function(round,i,rounds){
-                                                var addRacer=LadBrokesServices.addRacer(round,data3.id);
-                                                addRacer.then(function(data4){
-                                                    sails.log('Done!');
-                                                    return res.ok();
-                                                },function(err){
-                                                    sails.log(err);
-                                                    return res.badRequest(err);
-                                                });
+                            location.url.forEach(function(url,i3,urls){
+                                var addRound=WilliamHillService.addRound(i3+1,url,data2.id);
+                                addRound.then(function(data3){
+                                    var getRacers=WilliamHillService.getRacers(data3.url);
+                                    getRacers.then(function(racersData){
+                                        racersData.forEach(function(racer,i4,racers){
+                                            var addRacer=WilliamHillService.addRacer(racer,data3.id);
+                                            addRacer.then(function(data4){
+                                                sails.log('Done!!');
+                                                return res.ok();
+                                            },function(err){
+                                                sails.log(err);
                                             });
-                                        },function(err){
-                                            sails.log(err);
-                                            return res.badRequest(err);
                                         });
                                     },function(err){
                                         sails.log(err);
-                                        return res.badRequest(err);
                                     });
+                                },function(err){
+                                    sails.log(err);
                                 });
-                            },function(err){
-                                sails.log(err);
-                                return res.badRequest(err);
                             });
                         },function(err){
                             sails.log(err);
-                            return res.badRequest(err);
                         });
                     });
                 },function(err){
-                    sails.log(err);
-                    return res.badRequest(err);
+                    sails.log();
                 });
             });
-            return res.ok();
         },function(err){
             sails.log(err);
-            return res.badRequest(err);
         });
     },
     getData: function(req,res){
@@ -115,19 +101,19 @@ module.exports = {
         else {
             return res.badRequest('Invalid Date!!');
         }
-        var r = LadBrokesServices.getData1(day);
+        var r = WilliamHillService.getData1(day);
         r.then(function(data){
             var max=data.length;
             var count=0;
             if(max>0){
                 data.forEach(function(tournament,i,tournaments){
-                    var max2=tournament.locationLB.length;
+                    var max2=tournament.locationWH.length;
                     var count2=0;
                     if(max2>0) {
-                        tournament.locationLB.forEach(function (location, i2, locations) {
-                            var r2 = LadBrokesServices.getData2(location.id);
+                        tournament.locationWH.forEach(function (location, i2, locations) {
+                            var r2 = WilliamHillService.getData2(location.id);
                             r2.then(function (data2) {
-                                location.roundLB = data2;
+                                location.RoundWH = data2;
                                 count2++;
                                 if (count2 == max2) {
                                     count++;
@@ -156,9 +142,9 @@ module.exports = {
         });
     },
     test: function (req, res) {
-        var url = 'https://www.ladbrokes.com.au/racing/horses/bendigo/next/';
-        sails.log(1);
-        var getData=LadBrokesServices.getRacers(url);
+        //var url = 'https://www.williamhill.com.au/horse-racinggrid/meetings/Today';
+        var url = 'https://www.williamhill.com.au/horse-racing/20245780/flamingo-pk-1';
+        var getData=WilliamHillService.getRacers(url);
         getData.then(function(data){
             return res.ok(data);
         },function(err){
