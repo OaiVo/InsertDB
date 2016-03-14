@@ -174,7 +174,7 @@ module.exports = {
         var d = q.defer();
         RoundLB.find({
             locationLB:id
-        }).populate('RacerLB').exec(function (err, obj) {
+        }).populate('racerLB').exec(function (err, obj) {
             if (err) {
                 d.reject(err);
             } else {

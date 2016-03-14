@@ -3,10 +3,7 @@
  */
 module.exports = {
     attributes: {
-        number: {
-            type: 'string'
-        },
-        startTime:{
+        name: {
             type: 'string'
         },
         url: {
@@ -16,8 +13,8 @@ module.exports = {
             collection: 'racer',
             via: 'round'
         },
-        subCategory: {
-            model: 'subCategory'
+        location: {
+            model: 'location'
         }
     }
 };

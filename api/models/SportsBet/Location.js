@@ -11,10 +11,10 @@ module.exports = {
         },
         round: {
             collection: 'round',
-            via: 'subCategory'
+            via: 'location'
         },
-        day: {
-            model: 'day'
+        tournament: {
+            model: 'tournament'
         }
     }
 };

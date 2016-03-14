@@ -4,202 +4,173 @@
 var htmlToJson = require('html-to-json');
 module.exports = {
     crawling: function (req, res) {
-        /*var url = req.param('url');
-         if (url == undefined || url == '') {
-         return res.badRequest('Url not found');
-         }
-         if (url.trim().startsWith('http://www.sportsbet.com.au/')) {
-         } else {
-         return res.badRequest('Domain wrong');
-         }*/
-        var finalData = {
-            status: true,
-            data: {}
-        };
         var url = 'http://www.sportsbet.com.au/horse-racing/';
-        var that=this;
-
-        var Racing = SportsBetService.getRacing(url);
-        Racing.then(function (racingData) {
-            var data = racingData[2];
-            var count = 0;
-            var max = data.tournaments.length;
-            sails.log('-----max--------' + max);
-            data.tournaments.forEach(function (tournament, index, tournaments) {
-                var result = SportsBetService.getDays(tournament.href[0]);
-                result.then(function (r) {
-                    var max1 = r.length;
-                    if (max1 > 0) {
-                        var count1 = 0;
-                        r.forEach(function (day, index2, days) {
-                            var max2 = day.subCategories.length;
-                            if (max2 > 0) {
-                                var count2 = 0;
-                                day.subCategories.forEach(function (subCategory, index3, subCategories) {
-                                    var result2 = SportsBetService.getSubCategory(subCategory.href[0]);
-                                    result2.then(function (r2) {
-                                        var max3 = r2.length;
-                                        if (max3 > 0) {
-                                            var count3 = 0;
-                                            r2.forEach(function (round, index3, rounds) {
-                                                var result3 = SportsBetService.getRacers(round.href[0]);
-                                                result3.then(function (r3) {
-                                                    count3++;
-                                                    round.racers = r3;
-                                                    if (count3 == max3) {
-                                                        subCategory.rounds = r2;
-                                                        count2++;
-                                                        if (count2 == max2) {
-                                                            count1++;
-                                                            if (count1 == max1) {
-                                                                tournament.days = r;
-                                                                count++;
-                                                                sails.log('---------------------------' + count);
-                                                                if (count == max) {
-                                                                    that.insertData(data);
-                                                                    return res.ok(data);
-                                                                }
-                                                            }
+        var date = req.param('date');
+        if (date == 'today') {
+            var currentDate = new Date();
+            var day = currentDate.getDate();
+            if (day < 10) {
+                day = '0' + day;
+            }
+            var month = currentDate.getMonth() + 1;
+            if (month < 10) {
+                month = '0' + month;
+            }
+            var year = currentDate.getFullYear();
+            var day = year + '-' + month + '-' + day;
+        } else if (date == 'tomorrow') {
+            var currentDate = new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
+            var day = currentDate.getDate();
+            if (day < 10) {
+                day = '0' + day;
+            }
+            var month = currentDate.getMonth() + 1;
+            if (month < 10) {
+                month = '0' + month;
+            }
+            var year = currentDate.getFullYear();
+            var day = year + '-' + month + '-' + day;
+        } else {
+            return res.badRequest('Invalid Date!!');
+        }
+        var getTournaments = SportsBetService.getTournaments(url);
+        getTournaments.then(function (tournamentsData) {
+            tournamentsData.forEach(function (tournament, i, tournaments) {
+                var addTournament = SportsBetService.addTournament(tournament, day);
+                addTournament.then(function (data) {
+                    var getLocations = SportsBetService.getLocations(data.url, date);
+                    getLocations.then(function (locationsData) {
+                        if (locationsData.length > 0) {
+                            locationsData.forEach(function (location, i2, locations) {
+                                var addLocation = SportsBetService.addLocation(location, data.id);
+                                addLocation.then(function (data2) {
+                                    var getRounds = SportsBetService.getRounds(data2.url);
+                                    getRounds.then(function (roundsData) {
+                                        if (roundsData.length > 0) {
+                                            roundsData.forEach(function (round, i3, rounds) {
+                                                var addRound = SportsBetService.addRound(round, data2.id);
+                                                addRound.then(function (data3) {
+                                                    var getRacers = SportsBetService.getRacers(data3.url);
+                                                    getRacers.then(function (racersData) {
+                                                        if (racersData.length > 0) {
+                                                            racersData.forEach(function (racer, i4, racers) {
+                                                                var addRacer = SportsBetService.addRacer(racer, data3.id);
+                                                                addRacer.then(function (data4) {
+                                                                    sails.log('Done!!');
+                                                                    return res.ok();
+                                                                }, function (err) {
+                                                                    sails.log(err);
+                                                                });
+                                                            });
                                                         }
-                                                    }
+                                                    }, function (err) {
+                                                        sails.log(err);
+                                                    });
                                                 }, function (err) {
-                                                    count3++;
-                                                    round.racers = [];
-                                                    if (count3 == max3) {
-                                                        subCategory.rounds = r2;
-                                                        count2++;
-                                                        if (count2 == max2) {
-                                                            count1++;
-                                                            if (count1 == max1) {
-                                                                tournament.days = r;
-                                                                count++;
-                                                                sails.log('---------------------------' + count);
-                                                                if (count == max) {
-                                                                    that.insertData(data);
-                                                                    return res.ok(finalData);
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                });
-                                            });
-                                        } else {
-                                            subCategory.rounds = r2;
-                                            count2++;
-                                            if (count2 == max2) {
-                                                count1++;
-                                                if (count1 == max1) {
-                                                    tournament.days = r;
-                                                    count++;
-                                                    sails.log('---------------------------' + count);
-                                                    if (count == max) {
-                                                        that.insertData(data);
-                                                        return res.ok(finalData);
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }, function (err) {
-                                        subCategory.rounds = [];
-                                        count2++;
-                                        if (count2 == max2) {
-                                            count1++;
-                                            if (count1 == max1) {
-                                                tournament.days = r;
-                                                count++;
-                                                sails.log('---------------------------' + count);
-                                                if (count == max) {
-                                                    that.insertData(data);
-                                                    return res.ok(finalData);
-                                                }
-                                            }
-                                        }
-                                    });
-                                });
-                            } else {
-                                count1++;
-                                if (count1 == max1) {
-                                    tournament.days = r;
-                                    count++;
-                                    sails.log('---------------------------' + count);
-                                    if (count == max) {
-                                        that.insertData(data);
-                                        return res.ok(finalData);
-                                    }
-                                }
-                            }
-                        });
-                    } else {
-                        count++;
-                        sails.log('---------------------------' + count);
-                        tournament.days = r;
-                        if (count == max) {
-                            that.insertData(data);
-                            return res.ok(finalData);
-                        }
-                    }
-                }, function (err) {
-                    count++;
-                    sails.log('---------------------------' + count);
-                    tournament.days = [];
-                    if (count == max) {
-                        that.insertData(data);
-                        return res.ok(finalData);
-                    }
-                });
-            });
-        }, function (err) {
-            return res.badRequest(err);
-        });
-    },
-    insertData: function (data) {
-        var racing=SportsBetService.addRacing(data.name[0]);
-        racing.then(function(obj){
-            data.tournaments.forEach(function(tournament,i,tournaments){
-                var addTournament=SportsBetService.addTournament({name:tournament.name[0],href:tournament.href[0]},obj.id);
-                addTournament.then(function(obj) {
-                    tournament.days.forEach(function (day, i, days) {
-                        var addDay = SportsBetService.addDay({name:day.name[0]},obj.id);
-                        addDay.then(function(obj){
-                            day.subCategories.forEach(function(subCategory,i,subCategories){
-                                var addSubCategory=SportsBetService.addSubCategory({name:subCategory.name[0],href:subCategory.href[0]},obj.id);
-                                addSubCategory.then(function(obj){
-                                    subCategory.rounds.forEach(function(round,i,rounds){
-                                        var addRound=SportsBetService.addRound({number:round.number[0],startTime:round.startTime[0],href:round.href[0]},obj.id);
-                                        addRound.then(function(obj){
-                                            var max=round.racers.length;
-                                            var count=0;
-                                            round.racers.forEach(function(racer,i,racers){
-                                                var addRacer=SportsBetService.addRacer(racer,obj.id);
-                                                addRacer.then(function(obj){
-                                                    count++;
-                                                    if(count==max){
-                                                        sails.log('Done');
-                                                        return true;
-                                                    }
-                                                },function(err){
                                                     sails.log(err);
                                                 });
                                             });
-                                        },function(err){
-                                            sails.log(err);
-                                        });
+                                        }
+                                    }, function (err) {
+
                                     });
-                                },function(err){
+                                }, function (err) {
                                     sails.log(err);
                                 });
                             });
-                        },function(err){
-                            sails.log(err);
-                        });
-                    })
-                });
-                },function(err){
+                        }
+                    }, function (err) {
+                        sails.log(err);
+                    });
+                }, function (err) {
                     sails.log(err);
                 });
-        },function(err){
+            });
+        }, function (err) {
             sails.log(err);
+            return res.badRequest(err);
         });
-        return true;
+    },
+    getData: function (req, res) {
+        var date = req.param('date');
+        if (date == 'today') {
+            var currentDate = new Date();
+            var day = currentDate.getDate();
+            if (day < 10) {
+                day = '0' + day;
+            }
+            var month = currentDate.getMonth() + 1;
+            if (month < 10) {
+                month = '0' + month;
+            }
+            var year = currentDate.getFullYear();
+            var day = year + '-' + month + '-' + day;
+        }
+        else if (date == 'tomorrow') {
+            var currentDate = new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
+            var day = currentDate.getDate();
+            if (day < 10) {
+                day = '0' + day;
+            }
+            var month = currentDate.getMonth() + 1;
+            if (month < 10) {
+                month = '0' + month;
+            }
+            var year = currentDate.getFullYear();
+            var day = year + '-' + month + '-' + day;
+        }
+        else {
+            return res.badRequest('Invalid Date!!');
+        }
+        var r = SportsBetService.getData1(day);
+        r.then(function (data) {
+            var max = data.length;
+            var count = 0;
+            if (max > 0) {
+                data.forEach(function (tournament, i, tournaments) {
+                    var max2 = tournament.location.length;
+                    var count2 = 0;
+                    if (max2 > 0) {
+                        tournament.location.forEach(function (location, i2, locations) {
+                            var r2 = SportsBetService.getData2(location.id);
+                            r2.then(function (data2) {
+                                location.rounds = data2;
+                                count2++;
+                                if (count2 == max2) {
+                                    count++;
+                                    if (count == max) {
+                                        sails.log('Successfully!!');
+                                        return res.ok(data);
+                                    }
+                                }
+                            }, function (err) {
+                                return res.badRequest('Do not get data');
+                            });
+                        });
+                    } else {
+                        count++;
+                        if (count == max) {
+                            sails.log('Successfully!!');
+                            return res.ok(data);
+                        }
+                    }
+                });
+            } else {
+                return res.ok({});
+            }
+        }, function (err) {
+            return res.badRequest('Do not get data');
+        });
+    },
+    test: function (req, res) {
+        var date = req.param('date');
+        var url = 'http://www.sportsbet.com.au/horse-racing/australia-nz?LeftNav';
+        var getData = SportsBetService.getLocations(url, date);
+        getData.then(function (data) {
+            return res.ok(data);
+        }, function (err) {
+            sails.log(err);
+            return res.badRequest(err);
+        });
     }
 };

@@ -140,6 +140,12 @@ module.exports = {
                                 return res.badRequest('Do not get data');
                             });
                         });
+                    }else {
+                        count++;
+                        if (count == max) {
+                            sails.log('Successfully!!');
+                            return res.ok(data);
+                        }
                     }
                 });
             }else{

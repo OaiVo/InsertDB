@@ -6,15 +6,12 @@ module.exports = {
         name: {
             type: 'string'
         },
-        url: {
+        date: {
             type: 'string'
         },
-        day: {
-            collection: 'day',
+        location: {
+            collection: 'location',
             via: 'tournament'
-        },
-        racing: {
-            model: 'racing'
         }
     }
 };

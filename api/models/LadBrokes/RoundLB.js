@@ -6,7 +6,7 @@ module.exports = {
         url: {
             type: 'string'
         },
-        RacerLB: {
+        racerLB: {
             collection: 'racerLB',
             via: 'roundLB'
         },

@@ -5,28 +5,47 @@ var q = require('q');
 var htmlToJson = require('html-to-json');
 
 module.exports = {
-    getRacing: function (url) {
+
+    getTournaments: function (url) {
         var d = q.defer();
+        var newData =
+            [
+                {
+                    name: ['Australia - NZ'],
+                    href: ['http://www.sportsbet.com.au/horse-racing/australia-nz?LeftNav']
+                },
+                {
+                    name: ['International'],
+                    href: ['http://www.sportsbet.com.au/horse-racing/international?LeftNav']
+                },
+                {
+                    name: ['Asia Racing'],
+                    href: ['http://www.sportsbet.com.au/horse-racing/asia-racing?LeftNav']
+                },
+                {
+                    name: ['American'],
+                    href: ['http://www.sportsbet.com.au/horse-racing/american?LeftNav']
+                }
+            ];
+        d.resolve(newData);
+        return d.promise;
+
+        // get tournaments.
         if (url) {
             var horsesRacing = htmlToJson.request(url, {
-                RacingType: ['.nav-racing>ul>li', {
-                    name: ['.nav-racing>ul>li>a', function ($name) {
+                tournaments: ['.nav-racing>ul>li>ul>li', {
+                    name: ['.nav-racing>ul>li>ul>li>a', function ($name) {
                         return $name.text();
                     }],
-                    tournaments: ['.nav-racing>ul>li>ul>li', {
-                        name: ['.nav-racing>ul>li>ul>li>a', function ($name) {
-                            return $name.text();
-                        }],
-                        href: ['.nav-racing>ul>li>ul>li>a', function ($name) {
-                            return $name.attr('href');
-                        }]
+                    href: ['.nav-racing>ul>li>ul>li>a', function ($name) {
+                        return $name.attr('href');
                     }]
                 }]
             }, function (err, data) {
                 if (err) {
-                    d.reject('getRacing error');
+                    d.reject('getTournaments error');
                 } else {
-                    d.resolve(data.RacingType);
+                    d.resolve(data.tournaments);
                 }
             });
         } else {
@@ -35,7 +54,7 @@ module.exports = {
         }
         return d.promise;
     },
-    getDays: function (url) {
+    getLocations: function (url,date) {
         var d = q.defer();
         if (url) {
             var promise = htmlToJson.request(url, {
@@ -43,7 +62,7 @@ module.exports = {
                     name: ['.nav-racing>ul>li>ul>li>ul>li>a', function ($name) {
                         return $name.text();
                     }],
-                    subCategories: ['.nav-racing>ul>li>ul>li>ul>li>ul>li', {
+                    locations: ['.nav-racing>ul>li>ul>li>ul>li>ul>li', {
                         name: ['.nav-racing>ul>li>ul>li>ul>li>ul>li>a', function ($name) {
                             return $name.text();
                         }],
@@ -54,9 +73,15 @@ module.exports = {
                 }]
             }, function (err, data) {
                 if (err) {
-                    d.reject('getDays has error');
+                    d.reject('getLocations has error');
                 } else {
-                    d.resolve(data.days);
+                    var result=[];
+                    data.days.forEach(function(day,i,days){
+                        if(day.name[0].toLowerCase()==date){
+                            result.push(day.locations);
+                        }
+                    });
+                    d.resolve(result[0]);
                 }
             });
         } else {
@@ -65,12 +90,12 @@ module.exports = {
         }
         return d.promise;
     },
-    getSubCategory: function (url) {
+    getRounds: function (url) {
         var d = q.defer();
         if (url) {
             var promise = htmlToJson.request(url, {
                 rounds: ['.nav-racing>ul>li>ul>li>ul>li>ul>li>ul>li', {
-                    number: ['.nav-racing>ul>li>ul>li>ul>li>ul>li>ul>li>a', function ($name) {
+                    name: ['.nav-racing>ul>li>ul>li>ul>li>ul>li>ul>li>a', function ($name) {
                         var content = $name.text();
                         var res = content.split('-');
                         return res[0].trim();
@@ -78,7 +103,7 @@ module.exports = {
                     startTime: ['.nav-racing>ul>li>ul>li>ul>li>ul>li>ul>li>a', function ($name) {
                         var content = $name.text();
                         var res = content.split('-');
-                        return res[1][2].trim();
+                        return res[1].trim();
                     }],
                     href: ['.nav-racing>ul>li>ul>li>ul>li>ul>li>ul>li>a', function ($href) {
                         return $href.attr('href');
@@ -99,25 +124,24 @@ module.exports = {
     },
     getRacers: function (url) {
         var d = q.defer();
-        sails.log(url);
         if (url) {
             var promise = htmlToJson.request(url, {
                 racers: ['.racing-bettype-row', {
                     name: ['.racing-bettype-row>.vis-row>.racer-form>.racer-details>.racer-name', function ($name) {
-                        var $content=$name.text().trim();
-                        var $content2=$content.split('.');
-                        var $content3=$content2[1].split('(');
+                        var $content = $name.text().trim();
+                        var $content2 = $content.split('.');
+                        var $content3 = $content2[1].split('(');
                         return $content3[0].trim();
                     }],
                     number: ['.racing-bettype-row>.vis-row>.racer-form>.racer-details>.racer-name', function ($name) {
-                        var $content=$name.text().trim();
-                        var $content2=$content.split('.');
+                        var $content = $name.text().trim();
+                        var $content2 = $content.split('.');
                         return $content2[0].trim();
                     }],
                     barrier: ['.racing-bettype-row>.vis-row>.racer-form>.racer-details>.racer-name', function ($name) {
-                        var $content=$name.text().trim();
-                        var $content2=$content.split('(');
-                        var $content3=$content2[1].split(')');
+                        var $content = $name.text().trim();
+                        var $content2 = $content.split('(');
+                        var $content3 = $content2[1].split(')');
                         return $content3[0].trim(')');
                     }],
                     win: ['.racing-bettype-row>.vis-row>.float-right>.dflt_win_price>a>span', function ($val) {
@@ -141,25 +165,12 @@ module.exports = {
         }
         return d.promise;
     },
-    addRacing: function (data) {
-        var d = q.defer();
-        Racing.create({
-            name: data
-        }).exec(function (err, obj) {
-            if (err) {
-                d.reject('addRacing has error' + err);
-            } else {
-                d.resolve(obj);
-            }
-        });
-        return d.promise;
-    },
-    addTournament: function (data, id) {
+    addTournament: function (data, date) {
         var d = q.defer();
         Tournament.create({
-            name: data.name,
-            url: data.href,
-            racing: id
+            name: data.name[0],
+            url: data.href[0],
+            date: date
         }).exec(function (err, obj) {
             if (err) {
                 d.reject('addTournament has error' + err)
@@ -169,10 +180,11 @@ module.exports = {
         });
         return d.promise;
     },
-    addDay: function (data, id) {
+    addLocation: function (data, id) {
         var d = q.defer();
-        Day.create({
-            name: data.name,
+        Location.create({
+            name: data.name[0],
+            url: data.href[0],
             tournament: id
         }).exec(function (err, obj) {
             if (err) {
@@ -183,28 +195,12 @@ module.exports = {
         });
         return d.promise;
     },
-    addSubCategory: function (data, id) {
-        var d = q.defer();
-        SubCategory.create({
-            name: data.name,
-            url: data.href,
-            day: id
-        }).exec(function (err, obj) {
-            if (err) {
-                d.reject('addSubcategory has error' + err);
-            } else {
-                d.resolve(obj);
-            }
-        });
-        return d.promise;
-    },
     addRound: function (data, id) {
         var d = q.defer();
         Round.create({
-            number: data.number[0],
-            startTime: data.startTime[0],
+            name: data.name[0],
             url: data.href[0],
-            subCategory: id
+            location: id
         }).exec(function (err, obj) {
             if (err) {
                 d.reject('addRound has error' + err);
@@ -215,7 +211,6 @@ module.exports = {
         return d.promise;
     },
     addRacer: function (data, id) {
-        sails.log(1);
         var d = q.defer();
         Racer.create({
             name: data.name[0],
@@ -227,6 +222,33 @@ module.exports = {
         }).exec(function (err, obj) {
             if (err) {
                 d.reject('addRacer has error' + err);
+            } else {
+                d.resolve(obj);
+            }
+        });
+        return d.promise;
+    },
+    getData1: function(day){
+        var d = q.defer();
+        Tournament.find({
+            date:day
+        }).populateAll().exec(function (err, obj) {
+            if (err) {
+                d.reject(err);
+            } else {
+                d.resolve(obj);
+            }
+        });
+        return d.promise;
+    },
+    getData2: function(id){
+        var d = q.defer();
+        Round.find({
+            location:id
+        }).populate('racer').exec(function (err, obj) {
+            if (err) {
+                sails.log(111);
+                d.reject(err);
             } else {
                 d.resolve(obj);
             }
