@@ -66,8 +66,12 @@ module.exports = {
                 barrier: ['.entrant-details>span:nth-child(3)', function ($name) {
                     var $content = $name.text().trim();
                     var $content2 = $content.split('(');
-                    var $content3 = $content2[1].split(')');
-                    return $content3[0].trim(')');
+                    if($content2[1]) {
+                        var $content3 = $content2[1].split(')');
+                        return $content3[0].trim(')');
+                    }else{
+                        return null;
+                    }
                 }],
                 win: ['.win', function ($val) {
                     return $val.text().trim();

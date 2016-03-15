@@ -130,8 +130,12 @@ module.exports = {
                     name: ['.racing-bettype-row>.vis-row>.racer-form>.racer-details>.racer-name', function ($name) {
                         var $content = $name.text().trim();
                         var $content2 = $content.split('.');
-                        var $content3 = $content2[1].split('(');
-                        return $content3[0].trim();
+                        if($content2[1]) {
+                            var $content3 = $content2[1].split('(');
+                            return $content3[0].trim();
+                        }else{
+                            return null;
+                        }
                     }],
                     number: ['.racing-bettype-row>.vis-row>.racer-form>.racer-details>.racer-name', function ($name) {
                         var $content = $name.text().trim();
@@ -141,8 +145,12 @@ module.exports = {
                     barrier: ['.racing-bettype-row>.vis-row>.racer-form>.racer-details>.racer-name', function ($name) {
                         var $content = $name.text().trim();
                         var $content2 = $content.split('(');
-                        var $content3 = $content2[1].split(')');
-                        return $content3[0].trim(')');
+                        if($content2[1]) {
+                            var $content3 = $content2[1].split(')');
+                            return $content3[0].trim(')');
+                        }else{
+                            return null;
+                        }
                     }],
                     win: ['.racing-bettype-row>.vis-row>.float-right>.dflt_win_price>a>span', function ($val) {
                         return $val.text().trim();
